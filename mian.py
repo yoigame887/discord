@@ -1,207 +1,60 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[codz]
-*$py.class
+import discord
+from discord.ext import commands
+import datetime
 
-# C extensions
-*.so
+# --- การตั้งค่า ---
+# ใส่ Token ใหม่หลังจากเปลี่ยนรหัสผ่านแล้ว
+TOKEN = "MTQ1OTYwNDU1NTc2MjIzNzU1OQ.GXvUZo.PlqiCAHd5WAZ9GnX1b7xPP14eC6d02qJLsxyc4"
+# ใส่ ID ของห้องเสียงที่ต้องการเข้าไปสิงและเก็บ Log
+CHANNEL_ID = 1433666298260230246
 
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+client = commands.Bot(command_prefix="!", self_bot=True)
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+@client.event
+async def on_ready():
+    print(f'Logged in as {client.user}')
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py.cover
-.hypothesis/
-.pytest_cache/
-cover/
+    # เชื่อมต่อห้องเสียง
+    channel = client.get_channel(CHANNEL_ID)
+    if channel:
+        # self_mute, self_deaf เพื่อความเนียนและประหยัดเน็ต
+        await channel.connect(self_mute=True, self_deaf=True)
+        print(f'Joined voice channel: {channel.name}')
+        print('--- Waiting for users to join/leave ---')
+    else:
+        print("Channel not found")
 
-# Translations
-*.mo
-*.pot
 
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
+@client.event
+async def on_voice_state_update(member, before, after):
+    # ป้องกันบอทเก็บ Log ตัวเอง
+    if member.id == client.user.id:
+        return
 
-# Flask stuff:
-instance/
-.webassets-cache
+    # เวลาปัจจุบัน
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log_msg = ""
 
-# Scrapy stuff:
-.scrapy
+    # กรณี: มีคนเข้าห้อง (Joined)
+    # เช็คว่า channel ใหม่คือห้องเป้าหมาย และ channel เก่าต้องไม่ใช่ห้องเป้าหมาย
+    if after.channel and after.channel.id == CHANNEL_ID:
+        if before.channel is None or before.channel.id != CHANNEL_ID:
+            log_msg = f"[{now}] ✅ {member.name} (ID: {member.id}) เข้าห้องมาแล้ว"
 
-# Sphinx documentation
-docs/_build/
+    # กรณี: มีคนออกจากห้อง (Left)
+    # เช็คว่า channel เก่าคือห้องเป้าหมาย และ channel ใหม่ไม่ใช่ห้องเป้าหมาย
+    elif before.channel and before.channel.id == CHANNEL_ID:
+        if after.channel is None or after.channel.id != CHANNEL_ID:
+            log_msg = f"[{now}] ❌ {member.name} (ID: {member.id}) ออกจากห้องไปแล้ว"
 
-# PyBuilder
-.pybuilder/
-target/
+    # ถ้ามีข้อความ Log ให้ปรินต์และบันทึกไฟล์
+    if log_msg:
+        print(log_msg)
 
-# Jupyter Notebook
-.ipynb_checkpoints
+        # บันทึกลงไฟล์ log.txt (ต่อท้ายไปเรื่อยๆ)
+        with open("voice_history_log.txt", "a", encoding="utf-8") as f:
+            f.write(log_msg + "\n")
 
-# IPython
-profile_default/
-ipython_config.py
 
-# pyenv
-#   For a library or package, you might want to ignore these files since the code is
-#   intended to run in multiple environments; otherwise, check them in:
-# .python-version
-
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
-
-# UV
-#   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#uv.lock
-
-# poetry
-#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
-#poetry.lock
-#poetry.toml
-
-# pdm
-#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
-#   pdm recommends including project-wide configuration in pdm.toml, but excluding .pdm-python.
-#   https://pdm-project.org/en/latest/usage/project/#working-with-version-control
-#pdm.lock
-#pdm.toml
-.pdm-python
-.pdm-build/
-
-# pixi
-#   Similar to Pipfile.lock, it is generally recommended to include pixi.lock in version control.
-#pixi.lock
-#   Pixi creates a virtual environment in the .pixi directory, just like venv module creates one
-#   in the .venv directory. It is recommended not to include this directory in version control.
-.pixi
-
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
-__pypackages__/
-
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
-
-# Environments
-.env
-.envrc
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# pytype static type analyzer
-.pytype/
-
-# Cython debug symbols
-cython_debug/
-
-# PyCharm
-#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-#  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
-
-# Abstra
-# Abstra is an AI-powered process automation framework.
-# Ignore directories containing user credentials, local state, and settings.
-# Learn more at https://abstra.io/docs
-.abstra/
-
-# Visual Studio Code
-#  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore 
-#  that can be found at https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
-#  and can be added to the global gitignore or merged into this file. However, if you prefer, 
-#  you could uncomment the following to ignore the entire vscode folder
-# .vscode/
-
-# Ruff stuff:
-.ruff_cache/
-
-# PyPI configuration file
-.pypirc
-
-# Cursor
-#  Cursor is an AI-powered code editor. `.cursorignore` specifies files/directories to
-#  exclude from AI features like autocomplete and code analysis. Recommended for sensitive data
-#  refer to https://docs.cursor.com/context/ignore-files
-.cursorignore
-.cursorindexingignore
-
-# Marimo
-marimo/_static/
-marimo/_lsp/
-__marimo__/
+client.run(TOKEN)
