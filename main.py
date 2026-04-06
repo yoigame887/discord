@@ -1,10 +1,10 @@
+import os
 import discord
 from discord.ext import commands
 import datetime
 
 # --- การตั้งค่า ---
-# ใส่ Token ใหม่หลังจากเปลี่ยนรหัสผ่านแล้ว
-TOKEN = "NzkyNTc3Mjk0NzEwNjAzNzg2.G6hHSd.KOzDAlQfyRYhAtk3vVfix6Tesn9MkC3zvV6T2g"
+
 # ใส่ ID ของห้องเสียงที่ต้องการเข้าไปสิงและเก็บ Log
 CHANNEL_ID = 1433666298260230246
 
@@ -57,4 +57,4 @@ async def on_voice_state_update(member, before, after):
             f.write(log_msg + "\n")
 
 
-client.run(TOKEN)
+client.run(os.getenv('TOKEN'))
