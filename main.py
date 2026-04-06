@@ -4,7 +4,7 @@ import datetime
 
 # --- การตั้งค่า ---
 # ใส่ Token ใหม่หลังจากเปลี่ยนรหัสผ่านแล้ว
-TOKEN = "MTQ1OTYwNDU1NTc2MjIzNzU1OQ.GXvUZo.PlqiCAHd5WAZ9GnX1b7xPP14eC6d02qJLsxyc4"
+TOKEN = "NzkyNTc3Mjk0NzEwNjAzNzg2.G6hHSd.KOzDAlQfyRYhAtk3vVfix6Tesn9MkC3zvV6T2g"
 # ใส่ ID ของห้องเสียงที่ต้องการเข้าไปสิงและเก็บ Log
 CHANNEL_ID = 1433666298260230246
 
